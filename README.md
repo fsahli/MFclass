@@ -4,4 +4,14 @@ Machine learning techniques typically rely on large datasets to create accurate 
 
 This paper is currently under review. We will soon upload the codes once the paper is published.
 
-- Francisco Sahli Costabal, Paris Perdikaris, Ellen Kuhl, Daniel E. Hurtado. Multi-fidelity classification using Gaussian processes: accelerating the prediction of large-scale computational models
+- Francisco Sahli Costabal, Paris Perdikaris, Ellen Kuhl, Daniel E. Hurtado. [Multi-fidelity classification using Gaussian processes: accelerating the prediction of large-scale computational models](https://arxiv.org/abs/1905.03406). arXiv preprint arXiv:1905.03406 (2019).
+
+## Citation
+```
+@article{sahli2019multi-fidelity,
+  title={Multi-fidelity classification using Gaussian processes: accelerating the prediction of large-scale computational models},
+  author={Sahli Costabal, Francisco and Perdikaris, Paris and Kuhl, Ellen and Hurtado, Daniel E.},
+  journal={arXiv preprint arXiv:1901.04878},
+  year={2019}
+}
+```
