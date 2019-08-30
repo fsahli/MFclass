@@ -11,7 +11,18 @@
 # - Multi-fidelity classifier: ``MFGPclassifier``
 # - Sparse multi-fidelity classifier: ``SMFGPclassifier``
 # 
-# All the classifiers have an active learning option, where the next point is adaptively sample to improve accuracy. Use the method ``classifier.active_learning(N = 10)``.
+# All the classifiers have the following methods:
+# - ``classifier.create_model()``: to initialize the model.
+# - ``classifier.sample_model()``: to perform the inference using NUTS. This is tipically the step that takes longer.
+# - ``classifier.sample_predictive(X_star, n_samples = 100)``: generate n_samples samples at the locations X_star for the latent (high fidelity) Gaussian process. To obtain a single prediction for each point use: 
+# ```
+# from GPmodels import invlogit
+# y_star = invlogit(classifier.sample_predictive(X_star, n_samples = 100).mean(0))
+# ```
+# - ``classifier.active_learning(N = 15, plot = False)``: active learning option, where the next point is adaptively sample to improve accuracy. 
+# - ``classifier.plot()``: plot the classifier and the active learning distribution. Works only for 2D examples.
+# - ``classifier.test_model()``: compute the accuracy at the ``X_test`` locations given in the initialization
+# 
 # 
 # Dependencies:
 # - pyMC3: https://docs.pymc.io
@@ -209,10 +220,4 @@ SMFGPc.sample_model()
 
 
 SMFGPc.plot()
-
-
-# In[ ]:
-
-
-
 
