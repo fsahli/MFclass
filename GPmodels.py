@@ -16,7 +16,7 @@ from sklearn.metrics import precision_recall_fscore_support
 from theano.printing import Print
 from theano.tensor.slinalg import solve_lower_triangular
 from scipy import stats
-
+from scipy.spatial import cKDTree
 
 
 
@@ -54,6 +54,7 @@ class BaseClassifier(object):
         self.lb = lb
         self.ub = ub
         self.sampling_func = sampling_func
+        self.boundary = None
 
         self.h = 0.05
 
@@ -109,15 +110,39 @@ class BaseClassifier(object):
     def plot(self, filename):
         raise "not implemented"
 
-    def compute_next_point_cand(self):
+    def compute_next_point_cand(self, N = 1):
 
         self.pred_samples_cand = self.sample_predictive(self.X_cand)
 
         ent = -np.abs(self.pred_samples_cand.mean(0))/(self.pred_samples_cand.std(0) + 1e-9)
 
+        if N == 1:
+          self.X_next = self.X_cand[ent.argmax()][None,:]
+          print(self.X_next, ent.max())
 
-        self.X_next = self.X_cand[ent.argmax()]
-        print(self.X_next, ent.max())
+        else:
+          tree = cKDTree(self.X_cand)
+          neigh_to_consider = 2
+          n_local_min = self.X_cand.shape[0]
+
+          while int(n_local_min) > N:
+
+            _, neigh = tree.query(self.X_cand, neigh_to_consider)
+
+            local_minima_mask = np.prod((ent[neigh] - ent[:,None])[:,1:] < 0, axis = 1).astype(bool)
+            n_local_min = local_minima_mask.sum()
+
+            neigh_to_consider += 1
+
+            print(neigh_to_consider, n_local_min)
+
+          self.X_next = self.X_cand[local_minima_mask]
+          self.X_cand = self.X_cand[~local_minima_mask]
+          self.pred_samples_cand = self.pred_samples_cand[:,~local_minima_mask]
+          print(self.X_next, ent[local_minima_mask])
+
+
+        
 
     def append_next_point(self):
         raise "not implemented"
@@ -129,14 +154,14 @@ class BaseClassifier(object):
         print('accuracy: ', 100.*self.error[-1][0]/self.X_test.shape[0])
         print(self.error[-1])
 
-    def active_learning(self, N = 15, plot = False, filename = 'active_learning_%i.png'):
+    def active_learning(self, N = 15, N_points_round = 1, plot = False, filename = 'active_learning_%i.png'):
         for i in range(N):
             print('%i / %i' % (i+1,N))
             self.create_model()
             self.sample_model()
             if self.X_test is not None:
                 self.test_model()
-            self.compute_next_point_cand()
+            self.compute_next_point_cand(N_points_round)
             self.append_next_point()
             if plot:
                 self.plot(filename = filename % i, cand = True)
@@ -269,7 +294,7 @@ class BaseMFclassifier(BaseClassifier):
 
     def append_next_point(self):
         self.X_H = np.vstack((self.X_H, self.X_next))
-        Y_next = 1.0*self.sampling_func(denormalize(self.X_next[None,:], self.lb, self.ub))
+        Y_next = 1.0*self.sampling_func(denormalize(self.X_next, self.lb, self.ub))
         self.Y_H = np.concatenate((self.Y_H, np.array(Y_next)))
 
         self.X = np.concatenate((self.X_L,self.X_H))
@@ -388,7 +413,7 @@ class BaseSFclassifier(BaseClassifier):
 
     def append_next_point(self):
         self.X = np.vstack((self.X, self.X_next))
-        Y_next = 1.0*self.sampling_func(denormalize(self.X_next[None,:],self.lb, self.ub))
+        Y_next = 1.0*self.sampling_func(denormalize(self.X_next,self.lb, self.ub))
         self.Y = np.concatenate((self.Y, np.array(Y_next)))
 
 
