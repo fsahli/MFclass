@@ -1,3 +1,4 @@
+**For a more updated version with some of the functionality of this repo, check out this project [https://github.com/fsahli/AtrialMFclass](https://github.com/fsahli/AtrialMFclass)**
 
 ## Multi-fidelity classification using Gaussian processes: Accelerating the prediction of large-scale computational models
 
